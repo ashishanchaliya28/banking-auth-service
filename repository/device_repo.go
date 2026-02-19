@@ -53,7 +53,7 @@ func (r *deviceRepo) Upsert(ctx context.Context, device *model.Device) error {
 	_, err := r.col.UpdateOne(ctx,
 		bson.M{"user_id": device.UserID, "device_id": device.DeviceID},
 		bson.M{"$set": device},
-		options.Update().SetUpsert(true),
+		options.UpdateOne().SetUpsert(true),
 	)
 	return err
 }
