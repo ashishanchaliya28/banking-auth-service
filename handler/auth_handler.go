@@ -50,14 +50,15 @@ func (h *AuthHandler) VerifyOTP(c *fiber.Ctx) error {
 	if !verified {
 		return respondErr(c, fiber.StatusUnauthorized, "invalid or expired OTP")
 	}
-	user, err := h.authSvc.CreateOrGetUser(c.Context(), req.Mobile)
+	tokens, err := h.authSvc.IssueOTPTokens(c.Context(), req.Mobile, "web")
 	if err != nil {
-		return respondErr(c, fiber.StatusInternalServerError, "failed to create user")
+		return respondErr(c, fiber.StatusInternalServerError, "failed to issue tokens")
 	}
 	return respond(c, fiber.StatusOK, fiber.Map{
-		"message": "OTP verified",
-		"user_id": user.ID.Hex(),
-		"status":  user.Status,
+		"message":       "OTP verified",
+		"access_token":  tokens.AccessToken,
+		"refresh_token": tokens.RefreshToken,
+		"expires_in":    tokens.ExpiresIn,
 	})
 }
 

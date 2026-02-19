@@ -24,6 +24,7 @@ var (
 
 type AuthService interface {
 	CreateOrGetUser(ctx context.Context, mobile string) (*model.User, error)
+	IssueOTPTokens(ctx context.Context, mobile, deviceID string) (*model.AuthResponse, error)
 	SetMPIN(ctx context.Context, userID bson.ObjectID, mpin string) error
 	LoginWithMPIN(ctx context.Context, mobile, mpin, deviceID string) (*model.AuthResponse, error)
 	LoginWithBiometric(ctx context.Context, deviceID, secureKey string) (*model.AuthResponse, error)
@@ -79,6 +80,14 @@ func (s *authService) CreateOrGetUser(ctx context.Context, mobile string) (*mode
 		return nil, err
 	}
 	return newUser, nil
+}
+
+func (s *authService) IssueOTPTokens(ctx context.Context, mobile, deviceID string) (*model.AuthResponse, error) {
+	user, err := s.CreateOrGetUser(ctx, mobile)
+	if err != nil {
+		return nil, err
+	}
+	return s.generateTokenPair(ctx, user, deviceID)
 }
 
 func (s *authService) SetMPIN(ctx context.Context, userID bson.ObjectID, mpin string) error {
